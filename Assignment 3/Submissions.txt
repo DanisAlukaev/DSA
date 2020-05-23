@@ -1,0 +1,7 @@
+Links to the submission in CodeForces:
+Task 2.1. Connected graph.
+https://codeforces.com/group/3ZU2JJw8vQ/contest/276900/submission/78299454
+Task 2.2. Components dictionary.
+https://codeforces.com/group/3ZU2JJw8vQ/contest/276900/submission/78299574
+Task 2.3. Minimum spanning forest.
+https://codeforces.com/group/3ZU2JJw8vQ/contest/276900/submission/78299633

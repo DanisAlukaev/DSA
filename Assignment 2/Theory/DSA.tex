@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+
+\begin{document}
+
+{\centering
+  \large Solution for Home Assignment 2 (Theoretical part)\\
+   Danis Alukaev BS19-02\\ \par
+}
+
+\bigbreak
+\noindent $\textbf{3. Connected lines least squares}$.\\
+
+\noindent Given $n$ points on a 2D plane $(x_{1},y_{1}), (x_{2},y_{2}), ...,(x_{n},y_{n})$ with $x_{1} < x_{2} < ... < x_{n}$ that lie roughly on a sequence of several line segments. The idea is to approximate this data set not with a single line, but with several connected lines. So, our goal is to find the minimum cost (defined below) for given n points in the plane using dynamic programming. \\
+
+
+\noindent Let MIN($j$)= minimum cost for points $(x_{1},y_{1}), (x_{2},y_{2}), ..., (x_{j},y_{j})$, \\
+$e(i,j)$ = minimum sum of squared errors for points $(x_{i},y_{i}), (x_{i+1},y_{i+1}), ...,(x_{j},y_{j})$,\\
+Sum of squared errors $SSE=\sum_{i=1}^{n}(y_{i}-(a x_{i}+b))^{2}$, that is minimized when\\
+\\
+$a=\frac{n\sum_{i}(x_{i}y_{i})-(\sum_{i}x_{i})(\sum_{i}y_{i})}{n\sum_{i}x_{i}^{2}-(\sum_{i}x_{i})^{2}}$ and $b=\frac{\sum_{i}y_{i}-a\sum_{i}x_{i}}{n}$\\
+\\
+
+\noindent Now, we can define trade-off (cost) function for a particular solution of connected lines least squares problem: Trade-off = (the sum of $SSE$ in each segment) + (the number of lines in our approximation).\\
+
+\noindent \textbf{1.Define what are the subproblems.}
+
+\noindent 
+The minimal cost of the particular point $(x_{j},y_{j})$ can be either $e(i,j)$ for the solution that keep the line started in $(x_{i},y_{i})$ to approximate point $(x_{j},y_{j})$ where $1 \leq i < j \leq n$, or $e(i,j-1)+1$ for solution that requires introduction of a new line.
+We notice that for some problem MIN($j$) the segment (with the right endpoint $(x_{j},y_{j})$ and the optimal partition) starts at the some earlier point $(x_{i},y_{i})$. Therefore, we can solve the problem MIN$(j)$ if we know the solution for the subproblem MIN$(i-1)$ for $1\leq i \leq j \leq n$.
+\\
+
+\noindent \textbf{2.Recognize and solve the base cases.}\\
+Since the calculation of MIN$(j)$ requires the value of MIN$(i-1)$ and $i \geq 1$ (number of points), our base case will be MIN$(0)$. Let's consider such a case: if we have no points, then we do not introduce any lines, and minimal cost of the solution will be equal to 0. Therefore, MIN$(0)$ = 0.\\
+\\
+\noindent \textbf{3.Write down the recurrence that relates subproblems.}\\ 
+There are two possible scenarios for a particular point $(x_{j},y_{j})$, where $1 \leq j \leq n$:\\
+\noindent First scenario is to keep the line started in some point $(x_{i},y_{i})$ where $1 \leq i < j$, and use this line to approximate current point $(x_{j},y_{j})$. The cost of such a solution will be the $e(i,j)$.\\
+\noindent Second scenario is to introduce new line started in $(x_{j},y_{j})$ and the cost of such a solution will be the $e(i,j-1)+1$.\\
+\noindent So, for a particular MIN$(j)$ we try to find the balance of MIN$(i-1)$ and the $e(i, j)$, where $1\leq i \leq j \leq n$. It means, that we consider the partition defined in the previous iteration and decide is it optimal to introduce new line, or just keep the line continuous from some point $(x_{i},y_{i})$ to approximate the current point $(x_{j},y_{j})$.\\
+\noindent  Hence, the recurrence relation for the connected lines least squares problem can be defined as:\\
+MIN($j$) = min$(e(i,j) +$ MIN($i-1$) $+1$), for $1\leq i \leq j$ and $j\neq0$\\
+MIN($j$) = $0$, for $j = 0$.
+\\
+
+\noindent \textbf{4.Write the pseudocode (always using DP) that returns MIN(n).}
+The pseudocode shown in the table Algorithm 1 (page 3).\\ 
+\noindent Firstly, we declare two arrays to store computations of the minimum cost and minimum $SSE$ for corresponding points. The bottom-up approach allows us to avoid the overlapping of subproblems, i.e. it optimizes the process of $e(i,j)$ and MIN$(i)$ computation. Also, we define base case for connected lines least squares problem that is MIN($0$) = $0$. Then, we calculate and store minimum $SSE$ for all combinations of points $(x_{i},y_{i}), (x_{i+1},y_{i+1}), ...,(x_{j},y_{j})$ with $1\leq i \leq j \leq n$. Next step is the computing and storing the minimum cost for all sequences of points $(x_{1},y_{1}), ...,(x_{t},y_{t})$ with $t\in[1..n]$. To do that we use the derived in previous task recurrent formula MIN($j$) = min$(e(i,j) +$ MIN($i-1$) $+1$), for $1\leq i \leq j \leq n$ and $j\neq0$. Finally, the result will be stored in MIN$[n]$, and we can return this value.\\
+
+
+\noindent \textbf{5.State and justify the complexity of your pseudocode.}\\
+To treat all pairs $(i, j)$ with $1\leq i \leq j \leq n$ we need the quadratic time. Every computation of $e(i,j)$ takes linear time, because we process all points $(x_{i},y_{i}), ...,(x_{j},y_{j})$ to compute their squared errors. Therefore, the computation of all $e(i,j)$ for $1\leq i \leq j \leq n$ takes $O(n^{3})$ time. \\ 
+Then, we process given $n$ points, and on each iteration $j$ we try to find such an $i$ that $1\leq i \leq j$ holds and [$e(i,j) +$MIN($i-1$)$+1$] minimized. It can be performed in $O(n^{2})$ time. Hence, the time complexity of proposed algorithm is $O(n^{3}) + O(n^{2})=O(n^{3}+n^{2})=O(n^{3})$.
+
+
+\begin{algorithm}
+\caption{Connected lines least squares.}
+\begin{algorithmic}[1]
+\State // declare arrays
+\State new array Min$[n+1]$ // to store computations of the minimum cost for corresponding points 
+\State new array E$[n+1][n+1]$ // to store computations of the minimum SSE for corresponding points
+\Statex
+\State // set the base case
+\State Min[0] $\gets$ 0
+\Statex
+\For {j = 1 to n} 
+\For {i = 1 to j}
+\State // compute and store the minimum $SSE$ for points 
+\State //$(x_{i},y_{i}), (x_{i+1},y_{i+1}), ...,(x_{j},y_{j})$
+\State E$[i][j]$ $\gets$ $e(i,j)$ 
+\EndFor
+\EndFor
+\Statex
+\For {j = 1 to n}
+\State // introduce new variable that will store the MIN$(j)$
+\State min $\gets$ \verb|MAX_VALUE| 
+\For {i = 1 to j}
+\State // compute the cost for corresponding points
+\State temp $\gets$ Min$[i-1]$ + E$[i][j]$ + 1
+\State // check whether the obtained value is the minimum
+\State // among all previously calculated values
+\If {temp $<$ min}
+\State // set the preliminary minimum cost
+\State min $\gets$ temp 
+\EndIf
+\EndFor
+\State // store the result of MIN$(j)$
+\State Min$[j]$ $\gets$ min
+\EndFor
+\State \textbf{return} Min$[n]$
+\end{algorithmic}
+\end{algorithm}
+
+\end{document}
